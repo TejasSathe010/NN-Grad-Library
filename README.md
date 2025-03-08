@@ -1,4 +1,3 @@
-```markdown
 # NN-Grad Library
 
 **NN-Grad** is a Neural Network Training and Visualization Library for JavaScript/React. It provides a simple API to create, train, and visualize neural networks in a React environment. With easy-to-use classes such as `MLP` (Multi-Layer Perceptron) and `Value`, this library enables rapid experimentation with machine learning models in JavaScript.
