@@ -91,9 +91,17 @@ const NeuralNetworkVisualizer = () => {
   const [learningRate, setLearningRate] = useState(0.001);
   const [hiddenLayerSizes, setHiddenLayerSizes] = useState([10, 10]);
   const [dataPoints, setDataPoints] = useState({ points: [], labels: [] });
+  // Advanced training options:
+  const [batchSize, setBatchSize] = useState(20);
+  const batchSizeRef = useRef(batchSize);
+  const [enableLrDecay, setEnableLrDecay] = useState(false);
+  const [trainingHistory, setTrainingHistory] = useState([]);
+  const [chartTooltip, setChartTooltip] = useState(null);
+  const [modelInsights, setModelInsights] = useState(null);
 
-  // Refs for canvas, animation frame, model, training flag, and training accumulators.
+  // Refs for canvases, animation frame, model, training flag, and accumulators.
   const canvasRef = useRef(null);
+  const chartCanvasRef = useRef(null);
   const animationRef = useRef(null);
   const modelRef = useRef(null);
   const isTrainingRef = useRef(false);
@@ -101,12 +109,138 @@ const NeuralNetworkVisualizer = () => {
   const epochLossRef = useRef(0);
   const epochCorrectRef = useRef(0);
   const epochCountRef = useRef(0);
-  const BATCH_SIZE = 20; // Adjust mini-batch size to reduce per-frame work.
 
-  // Sync training flag ref with state.
+  // Synchronize training flag and batch size ref with state.
   useEffect(() => {
     isTrainingRef.current = isTraining;
   }, [isTraining]);
+
+  useEffect(() => {
+    batchSizeRef.current = batchSize;
+  }, [batchSize]);
+
+  // ------------------------------
+  // Draw the training chart (with white background, grid, and curves).
+  const drawTrainingChart = useCallback((history) => {
+    if (!chartCanvasRef.current) return;
+    const canvas = chartCanvasRef.current;
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+    // Fill the background.
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, width, height);
+
+    const margin = 30;
+    const chartWidth = width - 2 * margin;
+    const chartHeight = height - 2 * margin;
+
+    // Use the latest epoch number from history as maxEpoch.
+    const maxEpoch = history.length > 0 ? history[history.length - 1].epoch : 1;
+    const losses = history.map((d) => d.loss);
+    const maxLoss = losses.length > 0 ? Math.max(...losses) : 1;
+
+    // Draw grid lines.
+    ctx.strokeStyle = '#ddd';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let i = 0; i <= 5; i++) {
+      const x = margin + (i / 5) * chartWidth;
+      ctx.moveTo(x, margin);
+      ctx.lineTo(x, height - margin);
+    }
+    for (let i = 0; i <= 5; i++) {
+      const y = margin + (i / 5) * chartHeight;
+      ctx.moveTo(margin, y);
+      ctx.lineTo(width - margin, y);
+    }
+    ctx.stroke();
+
+    // Draw axis lines.
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(margin, margin);
+    ctx.lineTo(margin, height - margin);
+    ctx.lineTo(width - margin, height - margin);
+    ctx.stroke();
+
+    // Draw loss curve (red).
+    ctx.strokeStyle = 'red';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    history.forEach((d, i) => {
+      const x = margin + (d.epoch / maxEpoch) * chartWidth;
+      const y = height - margin - (d.loss / maxLoss) * chartHeight;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+
+    // Draw accuracy curve (blue), scaled to [0,100].
+    ctx.strokeStyle = 'blue';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    history.forEach((d, i) => {
+      const x = margin + (d.epoch / maxEpoch) * chartWidth;
+      const y = height - margin - (d.accuracy / 100) * chartHeight;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+
+    // Draw legends.
+    ctx.fillStyle = 'red';
+    ctx.font = '12px sans-serif';
+    ctx.fillText('Loss', margin, margin - 10);
+    ctx.fillStyle = 'blue';
+    ctx.fillText('Accuracy', margin + 50, margin - 10);
+  }, []);
+
+  // Redraw chart whenever trainingHistory updates.
+  useEffect(() => {
+    drawTrainingChart(trainingHistory);
+  }, [trainingHistory, drawTrainingChart]);
+  // ------------------------------
+
+  // Add mouse events for chart tooltip.
+  useEffect(() => {
+    const canvas = chartCanvasRef.current;
+    if (!canvas) return;
+    const handleMouseMove = (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const xPos = e.clientX - rect.left;
+      const margin = 30;
+      const chartWidth = canvas.width - 2 * margin;
+      // Map x position to an approximate epoch.
+      const approxEpoch = ((xPos - margin) / chartWidth) * (trainingHistory.length > 0 ? trainingHistory[trainingHistory.length - 1].epoch : 1);
+      let nearest = null;
+      let minDiff = Infinity;
+      trainingHistory.forEach((d) => {
+        const diff = Math.abs(d.epoch - approxEpoch);
+        if (diff < minDiff) {
+          minDiff = diff;
+          nearest = d;
+        }
+      });
+      if (nearest) {
+        setChartTooltip({
+          x: e.clientX,
+          y: rect.top + margin,
+          data: nearest,
+        });
+      }
+    };
+    const handleMouseLeave = () => {
+      setChartTooltip(null);
+    };
+    canvas.addEventListener('mousemove', handleMouseMove);
+    canvas.addEventListener('mouseleave', handleMouseLeave);
+    return () => {
+      canvas.removeEventListener('mousemove', handleMouseMove);
+      canvas.removeEventListener('mouseleave', handleMouseLeave);
+    };
+  }, [trainingHistory]);
 
   // Generate dataset when the dataset selection changes.
   useEffect(() => {
@@ -133,6 +267,7 @@ const NeuralNetworkVisualizer = () => {
     setEpochs(0);
     setLoss(0);
     setAccuracy(0);
+    setTrainingHistory([]);
     // Reset mini-batch accumulators.
     batchIndexRef.current = 0;
     epochLossRef.current = 0;
@@ -145,10 +280,26 @@ const NeuralNetworkVisualizer = () => {
 
   const initializeModel = () => {
     // For challenging datasets like Spiral, consider a deeper network.
-    let layers = [...hiddenLayerSizes, 1];
+    const layers = [...hiddenLayerSizes, 1];
     modelRef.current = new MLP(2, layers);
+    updateModelInsights();
     if (animationRef.current) {
       cancelAnimationFrame(animationRef.current);
+    }
+  };
+
+  // Compute and update model insights.
+  const updateModelInsights = () => {
+    if (modelRef.current) {
+      const params = modelRef.current.parameters();
+      let total = 0;
+      params.forEach(() => total += 1);
+      setModelInsights({
+        numLayers: params.length,
+        totalParams: total,
+      });
+    } else {
+      setModelInsights(null);
     }
   };
 
@@ -162,6 +313,7 @@ const NeuralNetworkVisualizer = () => {
     epochCorrectRef.current = 0;
     epochCountRef.current = 0;
     setEpochs(0);
+    setTrainingHistory([]);
     trainModel();
   };
 
@@ -173,7 +325,27 @@ const NeuralNetworkVisualizer = () => {
     }
   };
 
-  // Compute decision boundary grid (lower resolution to speed up drawing).
+  // Export training history as CSV.
+  const exportTrainingData = () => {
+    let csv = 'Epoch,Loss,Accuracy\n';
+    trainingHistory.forEach((d) => {
+      csv += `${d.epoch},${d.loss},${d.accuracy}\n`;
+    });
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'training_history.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Clear training history.
+  const clearTrainingHistory = () => {
+    setTrainingHistory([]);
+  };
+
+  // Compute decision boundary grid (lower resolution to speed drawing).
   const generateModelData = () => {
     if (!modelRef.current) return [];
     const resolution = 30;
@@ -200,10 +372,10 @@ const NeuralNetworkVisualizer = () => {
     const model = modelRef.current;
     const { points, labels } = dataPoints;
     const totalSamples = points.length;
+    const currentBatchSize = batchSizeRef.current;
 
-    // Process a mini-batch.
     const start = batchIndexRef.current;
-    const end = Math.min(start + BATCH_SIZE, totalSamples);
+    const end = Math.min(start + currentBatchSize, totalSamples);
     let miniBatchLoss = new Value(0);
     let miniBatchCorrect = 0;
     for (let i = start; i < end; i++) {
@@ -213,54 +385,53 @@ const NeuralNetworkVisualizer = () => {
       const p = sigmoid(rawOutput);
       const pred = p.data > 0.5 ? 1 : 0;
       if (pred === target) miniBatchCorrect++;
-      // MSE loss for this sample.
       const diff = p.add(new Value(-target));
       const sampleLoss = diff.mul(diff);
       miniBatchLoss = miniBatchLoss.add(sampleLoss);
     }
-    // Backpropagate mini-batch loss.
     miniBatchLoss.backward();
-    // Update parameters (apply average gradient over the mini-batch).
     const params = model.parameters();
     for (const p of params) {
       p.data -= learningRate * p.grad;
     }
-    // Reset gradients for next mini-batch.
     model.zero_grad();
 
-    // Accumulate epoch statistics.
     const batchCount = end - start;
     epochLossRef.current += miniBatchLoss.data;
     epochCorrectRef.current += miniBatchCorrect;
     epochCountRef.current += batchCount;
     batchIndexRef.current = end;
 
-    // If we've processed the entire dataset, end the epoch.
     if (batchIndexRef.current >= totalSamples) {
       const avgLoss = epochLossRef.current / epochCountRef.current;
       const acc = (epochCorrectRef.current / epochCountRef.current) * 100;
       setLoss(avgLoss);
       setAccuracy(acc);
       setEpochs((prev) => prev + 1);
+      // Use training history length for current epoch.
+      setTrainingHistory((prev) => {
+        const currentEpoch = prev.length + 1;
+        return [...prev, { epoch: currentEpoch, loss: avgLoss, accuracy: acc }];
+      });
 
-      // Update visualization once per epoch.
       const grid = generateModelData();
       drawVisualization(points, labels, grid);
 
-      // Stop if accuracy is at least 98%.
+      if (enableLrDecay) {
+        setLearningRate((prev) => prev * 0.98);
+      }
+
       if (acc >= 98) {
         stopTraining();
         console.log('Target accuracy reached:', acc);
         return;
       }
-      // Reset for next epoch.
       batchIndexRef.current = 0;
       epochLossRef.current = 0;
       epochCorrectRef.current = 0;
       epochCountRef.current = 0;
     }
 
-    // Schedule the next mini-batch.
     animationRef.current = requestAnimationFrame(trainModel);
   };
 
@@ -277,17 +448,14 @@ const NeuralNetworkVisualizer = () => {
     const translateX = width / 2;
     const translateY = height / 2;
 
-    // Draw decision boundary grid.
     if (grid && grid.length > 0) {
       for (const point of grid) {
         const x = translateX + point.x * scale;
         const y = translateY - point.y * scale;
-        // Map sigmoid output [0,1] to a color scale (converted to [-1,1]).
         ctx.fillStyle = interpolateColor(point.value * 2 - 1);
         ctx.fillRect(x - scale / 2, y - scale / 2, scale, scale);
       }
     }
-    // Draw data points.
     for (let i = 0; i < points.length; i++) {
       const [x, y] = points[i];
       const label = labels[i];
@@ -299,7 +467,6 @@ const NeuralNetworkVisualizer = () => {
       ctx.fill();
       ctx.stroke();
     }
-    // Draw coordinate axes.
     ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
     ctx.beginPath();
     ctx.moveTo(0, translateY);
@@ -340,7 +507,9 @@ const NeuralNetworkVisualizer = () => {
     <div className="w-full max-w-6xl mx-auto p-4 space-y-6">
       <div className="text-center space-y-2">
         <h1 className="text-3xl font-bold">Neural Network Training Visualizer</h1>
-        <p className="text-gray-600">Watch a neural network learn to classify data in real-time</p>
+        <p className="text-gray-600">
+          Watch a neural network learn to classify data in real-time with advanced training options
+        </p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="md:col-span-3 bg-white rounded-lg shadow p-4">
@@ -405,7 +574,9 @@ const NeuralNetworkVisualizer = () => {
                 <span className="font-semibold">Architecture: </span>
                 <select
                   value={hiddenLayerSizes.join(',')}
-                  onChange={(e) => updateHiddenLayers(e.target.value.split(',').map(Number))}
+                  onChange={(e) =>
+                    updateHiddenLayers(e.target.value.split(',').map(Number))
+                  }
                   disabled={isTrainingRef.current}
                   className="border rounded px-2 py-1"
                 >
@@ -417,6 +588,20 @@ const NeuralNetworkVisualizer = () => {
                 </select>
               </div>
             </div>
+          </div>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <button
+              onClick={exportTrainingData}
+              className="px-4 py-2 bg-green-600 text-white rounded"
+            >
+              Export Training Data
+            </button>
+            <button
+              onClick={clearTrainingHistory}
+              className="px-4 py-2 bg-yellow-600 text-white rounded"
+            >
+              Clear Training History
+            </button>
           </div>
         </div>
         <div className="bg-white rounded-lg shadow p-4 space-y-4">
@@ -472,6 +657,43 @@ const NeuralNetworkVisualizer = () => {
             </div>
           </div>
           <div>
+            <h2 className="text-xl font-bold mb-2">Advanced Training Options</h2>
+            <div className="space-y-2">
+              <div className="flex items-center">
+                <label className="text-sm font-medium mr-2">Batch Size:</label>
+                <input
+                  type="range"
+                  min="5"
+                  max="50"
+                  value={batchSize}
+                  onChange={(e) => setBatchSize(parseInt(e.target.value))}
+                  disabled={isTrainingRef.current}
+                />
+                <span className="text-sm ml-2">{batchSize}</span>
+              </div>
+              <div className="flex items-center">
+                <label className="text-sm font-medium mr-2">Learning Rate Decay:</label>
+                <input
+                  type="checkbox"
+                  checked={enableLrDecay}
+                  onChange={(e) => setEnableLrDecay(e.target.checked)}
+                  disabled={isTrainingRef.current}
+                />
+              </div>
+            </div>
+          </div>
+          <div>
+            <h2 className="text-xl font-bold mb-2">Advanced Model Insights</h2>
+            {modelInsights ? (
+              <div className="text-sm">
+                <p>Number of Layers: {modelInsights.numLayers}</p>
+                <p>Total Parameters: {modelInsights.totalParams}</p>
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500">No model insights available.</p>
+            )}
+          </div>
+          <div>
             <h2 className="text-xl font-bold mb-2">Legend</h2>
             <div className="space-y-2">
               <div className="flex items-center">
@@ -487,6 +709,35 @@ const NeuralNetworkVisualizer = () => {
                 <span className="text-sm">Decision Boundary</span>
               </div>
             </div>
+          </div>
+          <div className="relative">
+            <h2 className="text-xl font-bold mb-2">Training Chart</h2>
+            <canvas
+              ref={chartCanvasRef}
+              width={600}
+              height={300}
+              className="border border-gray-200 rounded"
+              style={{ backgroundColor: '#fff' }}
+            />
+            {chartTooltip && (
+              <div
+                style={{
+                  position: 'absolute',
+                  left: chartTooltip.x - 50,
+                  top: chartTooltip.y - 40,
+                  backgroundColor: 'rgba(0,0,0,0.7)',
+                  color: '#fff',
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  pointerEvents: 'none',
+                  fontSize: '12px'
+                }}
+              >
+                <div>Epoch: {chartTooltip.data.epoch}</div>
+                <div>Loss: {chartTooltip.data.loss.toFixed(4)}</div>
+                <div>Acc: {chartTooltip.data.accuracy.toFixed(2)}%</div>
+              </div>
+            )}
           </div>
         </div>
       </div>
