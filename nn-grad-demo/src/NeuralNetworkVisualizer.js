@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import ReactFlow, { Controls, Background } from 'react-flow-renderer';
 import { MLP, Value } from 'nngrad';
 
 // Custom sigmoid function using Value.
@@ -81,6 +82,82 @@ const interpolateColor = (value) => {
   return `rgba(${r}, ${g}, ${b}, 0.5)`;
 };
 
+// -------------------------------
+// Custom Edge Component to Animate Data Flow
+// -------------------------------
+const DataFlowEdge = ({
+  id,
+  sourceX,
+  sourceY,
+  targetX,
+  targetY,
+  style,
+  markerEnd,
+}) => {
+  const edgePath = `M${sourceX},${sourceY} L${targetX},${targetY}`;
+  return (
+    <>
+      <path id={id} className="react-flow__edge-path" d={edgePath} style={style} markerEnd={markerEnd} />
+      <circle cx={sourceX} cy={sourceY} r={4} fill="blue">
+        <animateMotion dur="2s" repeatCount="indefinite" path={edgePath} />
+      </circle>
+    </>
+  );
+};
+
+// -------------------------------
+// Advanced Network Architecture Visualizer
+// -------------------------------
+const NetworkArchitectureVisualizer = ({ layersSummary }) => {
+  // If layersSummary is provided, build nodes from it.
+  const nodes = useMemo(() => {
+    if (!layersSummary || layersSummary.length === 0) return [];
+    return layersSummary.map((layer, index) => ({
+      id: `layer-${index}`,
+      data: { 
+        label: layer.layerName === 'Input Layer'
+          ? `${layer.layerName}\n(${layer.neurons} neurons)\n${layer.label}`
+          : `${layer.layerName}\nAvg Weight: ${layer.avgWeight.toFixed(2)}\nAvg Bias: ${layer.avgBias.toFixed(2)}\nActivation: ${layer.activation}`
+      },
+      position: { x: 50 + index * 220, y: 50 },
+      style: {
+        border: '2px solid ' + (layer.layerName === 'Input Layer' ? '#007AFF' : (layer.layerName === 'Output Layer' ? '#34C759' : '#FF9500')),
+        padding: 10,
+        borderRadius: 5,
+        backgroundColor: '#fff',
+        whiteSpace: 'pre-line'
+      }
+    }));
+  }, [layersSummary]);
+
+  const edges = useMemo(() => {
+    const edgeArray = [];
+    if (nodes.length < 2) return edgeArray;
+    for (let i = 0; i < nodes.length - 1; i++) {
+      edgeArray.push({
+        id: `e-${i}-${i + 1}`,
+        source: nodes[i].id,
+        target: nodes[i + 1].id,
+        type: 'dataflow', // use our custom edge
+        animated: true,
+      });
+    }
+    return edgeArray;
+  }, [nodes]);
+
+  const edgeTypes = useMemo(() => ({ dataflow: DataFlowEdge }), []);
+
+  return (
+    <div style={{ height: 300, border: '1px solid #ccc', borderRadius: 5 }}>
+      <ReactFlow nodes={nodes} edges={edges} edgeTypes={edgeTypes} fitView>
+        <Background gap={16} color="#aaa" />
+        <Controls />
+      </ReactFlow>
+    </div>
+  );
+};
+
+
 const NeuralNetworkVisualizer = () => {
   // UI state for dataset, training stats, hyperparameters, etc.
   const [dataset, setDataset] = useState('spiral');
@@ -98,6 +175,8 @@ const NeuralNetworkVisualizer = () => {
   const [trainingHistory, setTrainingHistory] = useState([]);
   const [chartTooltip, setChartTooltip] = useState(null);
   const [modelInsights, setModelInsights] = useState(null);
+  const [modelSummary, setModelSummary] = useState([]);
+
 
   // Refs for canvases, animation frame, model, training flag, and accumulators.
   const canvasRef = useRef(null);
@@ -303,6 +382,32 @@ const NeuralNetworkVisualizer = () => {
     }
   };
 
+  // Compute summary of model parameters per layer.
+  const updateModelSummary = () => {
+    if (!modelRef.current) return;
+    // Get layers from the MLP instance.
+    const layers = modelRef.current.layers;
+    const summaries = layers.map((layer, index) => {
+      // Each layer is a Layer with neurons.
+      const neuronSummaries = layer.neurons.map(neuron => {
+        const weights = neuron.w.map(w => w.data);
+        const avgWeight = weights.reduce((sum, w) => sum + w, 0) / weights.length;
+        return { avgWeight, bias: neuron.b.data };
+      });
+      const avgLayerWeight = neuronSummaries.reduce((sum, n) => sum + n.avgWeight, 0) / neuronSummaries.length;
+      const avgLayerBias = neuronSummaries.reduce((sum, n) => sum + n.bias, 0) / neuronSummaries.length;
+      return {
+        layerName: index === layers.length - 1 ? 'Output Layer' : `Hidden Layer ${index + 1}`,
+        avgWeight: avgLayerWeight,
+        avgBias: avgLayerBias,
+        activation: index === layers.length - 1 ? 'Sigmoid' : 'ReLU',
+      };
+    });
+    // Add an input layer summary.
+    const inputSummary = { layerName: 'Input Layer', neurons: 2, label: 'Input [x, y]' };
+    setModelSummary([inputSummary, ...summaries]);
+  };
+
   const startTraining = () => {
     if (isTrainingRef.current) return;
     setIsTraining(true);
@@ -413,6 +518,7 @@ const NeuralNetworkVisualizer = () => {
         const currentEpoch = prev.length + 1;
         return [...prev, { epoch: currentEpoch, loss: avgLoss, accuracy: acc }];
       });
+      updateModelSummary();
 
       const grid = generateModelData();
       drawVisualization(points, labels, grid);
@@ -607,37 +713,14 @@ const NeuralNetworkVisualizer = () => {
         <div className="bg-white rounded-lg shadow p-4 space-y-4">
           <div>
             <h2 className="text-xl font-bold mb-2">Network Architecture</h2>
-            <div className="space-y-2">
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="text-sm font-medium">Input Layer</span>
-                  <span className="text-sm font-medium">2 neurons</span>
-                </div>
-                <div className="w-full bg-blue-100 h-6 rounded flex items-center justify-center">
-                  <span className="text-xs text-blue-800">Input [x, y]</span>
-                </div>
-              </div>
-              {hiddenLayerSizes.map((size, index) => (
-                <div key={index}>
-                  <div className="flex justify-between mb-1">
-                    <span className="text-sm font-medium">Hidden Layer {index + 1}</span>
-                    <span className="text-sm font-medium">{size} neurons</span>
-                  </div>
-                  <div className="w-full bg-purple-100 h-6 rounded flex items-center justify-center">
-                    <span className="text-xs text-purple-800">ReLU Activation</span>
-                  </div>
-                </div>
-              ))}
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="text-sm font-medium">Output Layer</span>
-                  <span className="text-sm font-medium">1 neuron (Sigmoid)</span>
-                </div>
-                <div className="w-full bg-green-100 h-6 rounded flex items-center justify-center">
-                  <span className="text-xs text-green-800">Sigmoid Activation</span>
-                </div>
-              </div>
-            </div>
+            {/* <NetworkArchitectureVisualizer
+              inputNeurons={2}
+              hiddenLayers={hiddenLayerSizes}
+              outputNeurons={1}
+              outputActivation="Sigmoid"
+              hiddenActivation="ReLU"
+            /> */}
+            <NetworkArchitectureVisualizer layersSummary={modelSummary} />
           </div>
           <div>
             <h2 className="text-xl font-bold mb-2">Training Stats</h2>
