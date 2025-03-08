@@ -122,4 +122,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 © 2025 Tejas Sathe. All rights reserved. [GitHub Repository](https://github.com/TejasSathe010/NN-Grad-Library)
-```
