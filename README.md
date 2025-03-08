@@ -123,12 +123,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 © 2025 Tejas Sathe. All rights reserved. [GitHub Repository](https://github.com/TejasSathe010/NN-Grad-Library)
 ```
-
-### Key Sections in this `README.md`:
-1. **Project Overview**: Briefly introduces the project and its main features.
-2. **Installation Instructions**: Provides the steps for installing via npm or by cloning the repository.
-3. **Usage**: Explains how to use the library by importing the classes and creating models.
-4. **Training Example**: Offers a simple training loop example, including stopping the training when accuracy reaches 98%.
-5. **Development Instructions**: Details how to clone the repository, install dependencies, and make local modifications.
-6. **License Information**: Includes licensing under MIT, with a link to the `LICENSE` file.
-
