@@ -38,8 +38,9 @@ export class Neuron extends Module {
   w: Value[];
   b: Value;
   nonlin: boolean;
+  activation: string;
 
-  constructor(nin: number, nonlin = true) {
+  constructor(nin: number, nonlin = true, activation = 'relu') {
     super();
     this.w = Array.from(
       range(0, nin),
@@ -47,6 +48,7 @@ export class Neuron extends Module {
     );
     this.b = new Value(0.0);
     this.nonlin = nonlin;
+    this.activation = activation;
   }
 
   call_value_(x: Value[]): Value[] {
@@ -54,12 +56,20 @@ export class Neuron extends Module {
       throw new Error('Different sizes');
     }
     const act = this.w
-      .map(function (e: Value, i: number): Value {
-        return e.mul(x[i]);
-      })
+      .map((e, i) => e.mul(x[i]))
       .reduce((sum, current) => sum.add(current), new Value(0.0))
       .add(this.b);
-    return this.nonlin ? [act.relu()] : [act];
+    if (this.activation === 'relu') {
+      return [act.relu()];
+    } else if (this.activation === 'sigmoid') {
+      return [act.sigmoid()];
+    } else if (this.activation === 'tanh') {
+      return [act.tanh()];
+    } else if (this.activation === 'linear') {
+      return [act];
+    } else {
+      return [act]; // default to linear if unknown
+    }
   }
 
   parameters(): Value[] {
@@ -75,9 +85,9 @@ export class Neuron extends Module {
 export class Layer extends Module {
   neurons: Neuron[];
 
-  constructor(nin: number, nout: number, nonlin = true) {
+  constructor(nin: number, nout: number, nonlin = true, activation: string) {
     super();
-    this.neurons = Array.from(range(0, nout), x => new Neuron(nin, nonlin));
+    this.neurons = Array.from(range(0, nout), x => new Neuron(nin, nonlin, activation));
   }
 
   call_value_(x: Value[]): Value[] {
@@ -104,13 +114,19 @@ export class Layer extends Module {
 export class MLP extends Module {
   layers: Layer[];
   
-  constructor(nin: number, nouts: number[]) {
+  constructor(nin: number, nouts: number[], activations: string[]) {
     super();
     const sizes = [nin].concat(nouts);
-    this.layers = Array.from(
-      nouts.keys(),
-      i => new Layer(sizes[i], sizes[i + 1], i !== nouts.length - 1),
-    );
+    this.layers = [];
+    for (let i = 0; i < nouts.length; i++) {
+      let act = 'relu';
+      if (activations && activations[i]) {
+        act = activations[i];
+      } else {
+        act = i === nouts.length - 1 ? 'sigmoid' : 'relu';
+      }
+      this.layers.push(new Layer(sizes[i], sizes[i + 1], i !== nouts.length - 1, act));
+    }
   }
 
   call_value_(x: Value[]): Value[] {

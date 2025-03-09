@@ -89,6 +89,24 @@ function isNumber(x: any): x is number {
       };
       return out;
     }
+
+    tanh() {
+      const t = Math.tanh(this.data);
+      const out = new Value(t, [this], 'tanh');
+      out._backward = () => {
+        this.grad += (1 - t * t) * out.grad;
+      };
+      return out;
+    }
+
+    sigmoid() {
+      const s = 1 / (1 + Math.exp(-this.data));
+      const out = new Value(s, [this], 'sigmoid');
+      out._backward = () => {
+        this.grad += s * (1 - s) * out.grad;
+      };
+      return out;
+    }
   
     // Backpropagation method
     backward(): void {
