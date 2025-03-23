@@ -115,6 +115,12 @@ To contribute to the project or make modifications locally, follow these steps:
    npm link nn-grad
    ```
 
+## Demo
+![Project Screenshot](https://github.com/TejasSathe010/NN-Grad-Library/blob/main/demo/demo3.jpeg)
+![Project Screenshot](https://github.com/TejasSathe010/NN-Grad-Library/blob/main/demo/demo2.png)
+![Project Screenshot](https://github.com/TejasSathe010/NN-Grad-Library/blob/main/demo/demo5.gif)
+
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
