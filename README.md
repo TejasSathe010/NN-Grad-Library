@@ -117,7 +117,6 @@ To contribute to the project or make modifications locally, follow these steps:
 
 ## Demo
 ![Project Screenshot](https://github.com/TejasSathe010/NN-Grad-Library/blob/main/demo/demo3.jpeg)
-![Project Screenshot](https://github.com/TejasSathe010/NN-Grad-Library/blob/main/demo/demo2.png)
 ![Project Screenshot](https://github.com/TejasSathe010/NN-Grad-Library/blob/main/demo/demo5.gif)
 
 
