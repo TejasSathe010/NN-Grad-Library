@@ -80,9 +80,6 @@ const interpolateColor = (value) => {
   return `rgba(${r}, ${g}, ${b}, 0.5)`;
 };
 
-// -------------------------------
-// Custom Edge Component to Animate Data Flow
-// -------------------------------
 const DataFlowEdge = ({
   id,
   sourceX,
@@ -103,9 +100,7 @@ const DataFlowEdge = ({
   );
 };
 
-// -------------------------------
-// Advanced Network Architecture Visualizer
-// -------------------------------
+
 const NetworkArchitectureVisualizer = ({ layersSummary }) => {
   const nodes = useMemo(() => {
     if (!layersSummary || layersSummary.length === 0) return [];
@@ -135,7 +130,7 @@ const NetworkArchitectureVisualizer = ({ layersSummary }) => {
         id: `e-${i}-${i + 1}`,
         source: nodes[i].id,
         target: nodes[i + 1].id,
-        type: 'dataflow', // use our custom edge
+        type: 'dataflow', 
         animated: true,
       });
     }
@@ -153,7 +148,6 @@ const NetworkArchitectureVisualizer = ({ layersSummary }) => {
     </div>
   );
 };
-
 
 const NeuralNetworkVisualizer = () => {
   const [dataset, setDataset] = useState('spiral');
@@ -577,351 +571,335 @@ const NeuralNetworkVisualizer = () => {
   };
 
   return (
-    <div className="w-full bg-white dark:bg-slate-900 font-sans">
-  <div className="max-w-8xl mx-auto px-4 sm:px-6 md:px-8">
-    <div className="py-8 mb-6 border-b border-slate-200 dark:border-slate-700">
-  <div className="flex items-center justify-between">
-    <div>
-      <h1 className="text-4xl sm:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-        Neural Network Training Visualizer
-      </h1>
-      <p className="mt-3 text-lg text-slate-600 dark:text-slate-400 max-w-3xl">
-        Watch a neural network learn to classify data in real-time with advanced training options
-      </p>
-    </div>
-    <div className="hidden lg:block">
-    <Link
-        to="/package-page" 
-        className="inline-flex items-center rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700 focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900 dark:bg-sky-500 dark:hover:bg-sky-400"
-      >
-        Checkout nngrad library
-        <svg className="ml-2 h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-        </svg>
-      </Link>
-    </div>
-  </div>
-</div>
-
-    <div className="lg:flex lg:items-start">
-      <div className="flex-1 py-10">
-        <div className="mb-10 overflow-hidden rounded-lg ring-1 ring-slate-200 dark:ring-slate-800 shadow-sm">
-          <div className="p-6">
-            <canvas
-              ref={canvasRef}
-              className="w-full h-96 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
-              width={800}
-              height={400}
-            />
-            
-            <div className="mt-8 flex flex-wrap items-center gap-4">
-              <button
-                onClick={startTraining}
-                disabled={isTrainingRef.current}
-                className="inline-flex items-center justify-center rounded-md py-2 px-4 text-sm font-semibold focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 bg-sky-500 text-white hover:bg-sky-600 active:bg-sky-700 focus-visible:outline-sky-600 disabled:bg-slate-300 disabled:text-slate-500"
-              >
-                Start Training
-              </button>
-              <button
-                onClick={stopTraining}
-                disabled={!isTrainingRef.current}
-                className="inline-flex items-center justify-center rounded-md py-2 px-4 text-sm font-semibold focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 bg-rose-500 text-white hover:bg-rose-600 active:bg-rose-700 focus-visible:outline-rose-600 disabled:bg-slate-300 disabled:text-slate-500"
-              >
-                Stop Training
-              </button>
-              <button
-                onClick={generateData}
-                disabled={isTrainingRef.current}
-                className="inline-flex items-center justify-center rounded-md py-2 px-4 text-sm font-semibold focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 bg-slate-800 text-white hover:bg-slate-900 active:bg-slate-800 focus-visible:outline-slate-900 disabled:bg-slate-300 disabled:text-slate-500 dark:bg-slate-700 dark:hover:bg-slate-600"
-              >
-                Regenerate Data
-              </button>
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-12">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+                Neural Network Training Visualizer
+              </h1>
+              <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl">
+                Watch a neural network learn to classify data in real-time with advanced training options
+              </p>
             </div>
-            
-            <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Dataset</label>
-                <select
-                  value={dataset}
-                  onChange={(e) => setDataset(e.target.value)}
-                  disabled={isTrainingRef.current}
-                  className="block w-full rounded-md border-slate-300 dark:border-slate-700 text-sm shadow-sm py-2 pl-3 pr-10 text-slate-900 dark:text-white bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed"
-                >
-                  <option value="spiral">Spiral</option>
-                  <option value="circle">Circle</option>
-                  <option value="moon">Moon</option>
-                </select>
-              </div>
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Learning Rate</label>
-                <select
-                  value={learningRate}
-                  onChange={(e) => setLearningRate(parseFloat(e.target.value))}
-                  disabled={isTrainingRef.current}
-                  className="block w-full rounded-md border-slate-300 dark:border-slate-700 text-sm shadow-sm py-2 pl-3 pr-10 text-slate-900 dark:text-white bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed"
-                >
-                  <option value="0.001">0.001</option>
-                  <option value="0.005">0.005</option>
-                  <option value="0.01">0.01</option>
-                </select>
-              </div>
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Architecture</label>
-                <select
-                  value={hiddenLayerSizes.join(',')}
-                  onChange={(e) =>
-                    updateHiddenLayers(e.target.value.split(',').map(Number))
-                  }
-                  disabled={isTrainingRef.current}
-                  className="block w-full rounded-md border-slate-300 dark:border-slate-700 text-sm shadow-sm py-2 pl-3 pr-10 text-slate-900 dark:text-white bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed"
-                >
-                  <option value="5">5 neurons</option>
-                  <option value="10">10 neurons</option>
-                  <option value="5,5">5,5 neurons</option>
-                  <option value="10,10">10,10 neurons</option>
-                  <option value="20,10,5">20,10,5 neurons</option>
-                </select>
-              </div>
-            </div>
-            
-            <div className="mt-8 flex flex-wrap gap-4">
-              <button
-                onClick={exportTrainingData}
-                className="inline-flex items-center justify-center rounded-md py-2 px-4 text-sm font-semibold focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 bg-emerald-500 text-white hover:bg-emerald-600 active:bg-emerald-700 focus-visible:outline-emerald-600"
+            <div className="hidden lg:block mt-4">
+              <Link
+                to="/package-page"
+                className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >
-                Export Training Data
-              </button>
-              <button
-                onClick={clearTrainingHistory}
-                className="inline-flex items-center justify-center rounded-md py-2 px-4 text-sm font-semibold focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 bg-amber-500 text-white hover:bg-amber-600 active:bg-amber-700 focus-visible:outline-amber-600"
-              >
-                Clear Training History
-              </button>
+                Checkout nngrad library
+                <svg className="ml-2 -mr-0.5 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </Link>
             </div>
           </div>
         </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-10">
-          <div className="space-y-6">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white">Training Stats</h2>
-            <div className="rounded-lg overflow-hidden border border-slate-200 dark:border-slate-800">
-              <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-sm font-medium text-slate-900 dark:text-slate-200">
-                Current metrics
-              </div>
-              <div className="divide-y divide-slate-200 dark:divide-slate-800">
-                <div className="flex justify-between px-4 py-3 text-sm">
-                  <span className="text-slate-600 dark:text-slate-400">Epochs</span>
-                  <span className="font-medium text-slate-900 dark:text-white">{epochs}</span>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <div className="lg:col-span-8 space-y-8">
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg overflow-hidden ring-1 ring-black ring-opacity-5">
+              <div className="p-6">
+                <canvas
+                  ref={canvasRef}
+                  className="w-full h-96 rounded-lg bg-gray-50 dark:bg-slate-900"
+                  width={800}
+                  height={400}
+                />
+                
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <button
+                    onClick={startTraining}
+                    disabled={isTrainingRef.current}
+                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Start Training
+                  </button>
+                  <button
+                    onClick={stopTraining}
+                    disabled={!isTrainingRef.current}
+                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Stop Training
+                  </button>
+                  <button
+                    onClick={generateData}
+                    disabled={isTrainingRef.current}
+                    className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-slate-900 hover:bg-gray-50 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Regenerate Data
+                  </button>
                 </div>
-                <div className="flex justify-between px-4 py-3 text-sm">
-                  <span className="text-slate-600 dark:text-slate-400">Loss</span>
-                  <span className="font-medium text-slate-900 dark:text-white">{loss.toFixed(4)}</span>
+                
+                <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Dataset
+                    </label>
+                    <select
+                      value={dataset}
+                      onChange={(e) => setDataset(e.target.value)}
+                      disabled={isTrainingRef.current}
+                      className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 rounded-md bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <option value="spiral">Spiral</option>
+                      <option value="circle">Circle</option>
+                      <option value="moon">Moon</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Learning Rate
+                    </label>
+                    <select
+                      value={learningRate}
+                      onChange={(e) => setLearningRate(parseFloat(e.target.value))}
+                      disabled={isTrainingRef.current}
+                      className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 rounded-md bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <option value="0.001">0.001</option>
+                      <option value="0.005">0.005</option>
+                      <option value="0.01">0.01</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Architecture
+                    </label>
+                    <select
+                      value={hiddenLayerSizes.join(',')}
+                      onChange={(e) =>
+                        updateHiddenLayers(e.target.value.split(',').map(Number))
+                      }
+                      disabled={isTrainingRef.current}
+                      className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 rounded-md bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <option value="5">5 neurons</option>
+                      <option value="10">10 neurons</option>
+                      <option value="5,5">5,5 neurons</option>
+                      <option value="10,10">10,10 neurons</option>
+                      <option value="20,10,5">20,10,5 neurons</option>
+                    </select>
+                  </div>
                 </div>
-                <div className="flex justify-between px-4 py-3 text-sm">
-                  <span className="text-slate-600 dark:text-slate-400">Accuracy</span>
-                  <span className="font-medium text-slate-900 dark:text-white">{accuracy.toFixed(2)}%</span>
+                
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <button
+                    onClick={exportTrainingData}
+                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                  >
+                    Export Training Data
+                  </button>
+                  <button
+                    onClick={clearTrainingHistory}
+                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
+                  >
+                    Clear Training History
+                  </button>
                 </div>
               </div>
             </div>
-          </div>
-          
-          <div className="space-y-6">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white">Advanced Training Options</h2>
-            <div className="rounded-lg overflow-hidden border border-slate-200 dark:border-slate-800">
-              <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-sm font-medium text-slate-900 dark:text-slate-200">
-                Hyperparameters
-              </div>
-              <div className="divide-y divide-slate-200 dark:divide-slate-800">
-                <div className="flex items-center justify-between px-4 py-3">
-                  <label className="text-sm text-slate-600 dark:text-slate-400">Batch Size</label>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="range"
-                      min="5"
-                      max="50"
-                      value={batchSize}
-                      onChange={(e) => setBatchSize(parseInt(e.target.value))}
-                      disabled={isTrainingRef.current}
-                      className="w-24 accent-sky-500"
-                    />
-                    <span className="inline-flex items-center rounded-md bg-slate-50 dark:bg-slate-800 px-2 py-1 text-xs font-medium text-slate-600 dark:text-slate-400 ring-1 ring-inset ring-slate-500/10 dark:ring-slate-400/20">
-                      {batchSize}
-                    </span>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg overflow-hidden ring-1 ring-black ring-opacity-5 p-6">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                  Training Stats
+                </h2>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">Epochs</span>
+                    <span className="font-medium text-gray-900 dark:text-white">{epochs}</span>
+                  </div>
+                  <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">Loss</span>
+                    <span className="font-medium text-gray-900 dark:text-white">{loss.toFixed(4)}</span>
+                  </div>
+                  <div className="flex items-center justify-between p-4">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">Accuracy</span>
+                    <span className="font-medium text-gray-900 dark:text-white">{accuracy.toFixed(2)}%</span>
                   </div>
                 </div>
-                <div className="flex items-center justify-between px-4 py-3">
-                  <label className="text-sm text-slate-600 dark:text-slate-400">Learning Rate Decay</label>
-                  <div className="relative flex items-start">
-                    <div className="flex h-6 items-center">
+              </div>
+
+              <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg overflow-hidden ring-1 ring-black ring-opacity-5 p-6">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                  Advanced Training Options
+                </h2>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
+                    <span className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                      Batch Size
+                      <input
+                        type="range"
+                        min="5"
+                        max="50"
+                        value={batchSize}
+                        onChange={(e) => setBatchSize(parseInt(e.target.value))}
+                        disabled={isTrainingRef.current}
+                        className="w-32 accent-indigo-500"
+                      />
+                      <span>{batchSize}</span>
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between p-4">
+                    <span className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                      Learning Rate Decay
                       <input
                         type="checkbox"
                         checked={enableLrDecay}
                         onChange={(e) => setEnableLrDecay(e.target.checked)}
                         disabled={isTrainingRef.current}
-                        className="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-600 disabled:opacity-50"
+                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                       />
-                    </div>
+                    </span>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-10">
-          <div className="space-y-6">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white">Model Insights</h2>
-            <div className="rounded-lg overflow-hidden border border-slate-200 dark:border-slate-800">
-              <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-sm font-medium text-slate-900 dark:text-slate-200">
-                Architecture details
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
+              <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg overflow-hidden ring-1 ring-black ring-opacity-5 p-6">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                  Model Insights
+                </h2>
+                <div className="space-y-4">
+                  {modelInsights ? (
+                    <>
+                      <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">Layers</span>
+                        <span className="font-medium text-gray-900 dark:text-white">{modelInsights.numLayers}</span>
+                      </div>
+                      <div className="flex items-center justify-between p-4">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">Parameters</span>
+                        <span className="font-medium text-gray-900 dark:text-white">{modelInsights.totalParams}</span>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="p-4 text-sm text-gray-500 dark:text-gray-400 italic">
+                      No model insights available.
+                    </div>
+                  )}
+                </div>
               </div>
-              <div className="divide-y divide-slate-200 dark:divide-slate-800">
-                {modelInsights ? (
-                  <>
-                    <div className="flex justify-between px-4 py-3 text-sm">
-                      <span className="text-slate-600 dark:text-slate-400">Layers</span>
-                      <span className="font-medium text-slate-900 dark:text-white">{modelInsights.numLayers}</span>
+
+              <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg overflow-hidden ring-1 ring-black ring-opacity-5 p-6">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                  Legend
+                </h2>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 p-4 border-b border-gray-100 dark:border-gray-800">
+                    <div className="w-4 h-4 rounded-full bg-red-500"></div>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">Class 0</span>
+                  </div>
+                  <div className="flex items-center gap-3 p-4 border-b border-gray-100 dark:border-gray-800">
+                    <div className="w-4 h-4 rounded-full bg-blue-500"></div>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">Class 1</span>
+                  </div>
+                  <div className="flex items-center gap-3 p-4">
+                    <div className="w-16 h-4 bg-gradient-to-r from-red-500 to-blue-500 rounded"></div>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">Decision Boundary</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg overflow-hidden ring-1 ring-black ring-opacity-5 mt-8">
+              <div className="px-6 py-4">
+                <h2 className="text-base font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-indigo-500 dark:text-indigo-400">
+                    <path d="M6 6H8V18H6V6Z" fill="currentColor" />
+                    <path d="M16 6H18V18H16V6Z" fill="currentColor" />
+                    <path d="M21 18H3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                    <path d="M3 15.5005L16.443 8.12325C16.8035 7.93591 17.2264 8.0601 17.4138 8.42063C17.4925 8.56191 17.511 8.72856 17.4653 8.88282L15.1258 16.0903C15.0435 16.3786 14.7733 16.5729 14.4748 16.5376C14.3372 16.5221 14.2063 16.4611 14.1029 16.3636L9.63615 12.1589C9.53862 12.0671 9.40969 12.0129 9.27411 12.0064L3 11.5005" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                  </svg>
+                  Training Progress
+                </h2>
+                <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                  Real-time visualization of model performance metrics during training
+                </p>
+              </div>
+
+              <div className="px-6 py-4">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                    <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Loss</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                    <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Accuracy</span>
+                  </div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                    Total Epochs: <span className="font-medium text-gray-800 dark:text-gray-200">{epochs}</span>
+                  </div>
+                </div>
+
+                <div className="rounded-lg shadow-sm bg-white dark:bg-slate-800 overflow-hidden ring-1 ring-gray-900/5 dark:ring-white/10">
+                  <div className="p-4">
+                    <canvas
+                      ref={chartCanvasRef}
+                      width={900}
+                      height={400}
+                      className="w-full h-full"
+                    />
+                  </div>
+                  <div className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 flex justify-between items-center bg-gray-50 dark:bg-slate-900/10">
+                    <button className="text-xs text-gray-600 dark:text-gray-400 hover:text-indigo-500 dark:hover:text-indigo-400 flex items-center gap-1">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                      </svg>
+                      Export as PNG
+                    </button>
+                    <div className="flex items-center gap-4 text-xs text-gray-600 dark:text-gray-400">
+                      <span>
+                        Current Loss: <span className="font-medium text-gray-800 dark:text-gray-200">{(loss || 0).toFixed(4)}</span>
+                      </span>
+                      <span>
+                        Accuracy: <span className="font-medium text-gray-800 dark:text-gray-200">{(accuracy || 0).toFixed(2)}%</span>
+                      </span>
                     </div>
-                    <div className="flex justify-between px-4 py-3 text-sm">
-                      <span className="text-slate-600 dark:text-slate-400">Parameters</span>
-                      <span className="font-medium text-slate-900 dark:text-white">{modelInsights.totalParams}</span>
+                  </div>
+                </div>
+
+                {chartTooltip && (
+                  <div className="absolute z-10 px-3 py-2 text-sm font-medium text-white bg-gray-800 rounded-lg shadow-sm dark:bg-gray-700 pointer-events-none transform -translate-x-1/2 -translate-y-full"
+                    style={{
+                      left: chartTooltip.x,
+                      top: chartTooltip.y - 8,
+                    }}
+                  >
+                    <div className="flex items-center justify-between space-x-4 mb-1 pb-1 border-b border-gray-700/50">
+                      <span className="font-medium text-indigo-400">Epoch {chartTooltip.data.epoch}</span>
                     </div>
-                  </>
-                ) : (
-                  <div className="px-4 py-3 text-sm italic text-slate-500 dark:text-slate-400">
-                    No model insights available.
+                    <div className="flex flex-col space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-400">Loss:</span>
+                        <span className="font-mono font-medium text-red-300">{chartTooltip.data.loss.toFixed(4)}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-400">Accuracy:</span>
+                        <span className="font-mono font-medium text-blue-300">{chartTooltip.data.accuracy.toFixed(2)}%</span>
+                      </div>
+                    </div>
+                    <div className="absolute left-1/2 top-full -translate-x-1/2 -mt-px border-8 border-transparent border-t-gray-800 dark:border-t-gray-700"></div>
                   </div>
                 )}
               </div>
             </div>
-          </div>
-          
-          <div className="space-y-6">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white">Legend</h2>
-            <div className="rounded-lg overflow-hidden border border-slate-200 dark:border-slate-800">
-              <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-sm font-medium text-slate-900 dark:text-slate-200">
-                Data visualization
-              </div>
-              <div className="divide-y divide-slate-200 dark:divide-slate-800">
-                <div className="flex items-center gap-3 px-4 py-3">
-                  <div className="w-4 h-4 rounded-full bg-red-500"></div>
-                  <span className="text-sm text-slate-600 dark:text-slate-400">Class 0</span>
-                </div>
-                <div className="flex items-center gap-3 px-4 py-3">
-                  <div className="w-4 h-4 rounded-full bg-blue-500"></div>
-                  <span className="text-sm text-slate-600 dark:text-slate-400">Class 1</span>
-                </div>
-                <div className="flex items-center gap-3 px-4 py-3">
-                  <div className="w-16 h-4 bg-gradient-to-r from-red-500 to-blue-500 rounded"></div>
-                  <span className="text-sm text-slate-600 dark:text-slate-400">Decision Boundary</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div className="not-prose relative bg-slate-50 rounded-xl overflow-hidden dark:bg-slate-800/25">
-        <div className="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,#fff,rgba(255,255,255,0.6))] dark:bg-grid-slate-700/25 dark:[mask-image:linear-gradient(0deg,rgba(255,255,255,0.1),rgba(255,255,255,0.5))]"></div>
-        <div className="relative rounded-xl overflow-auto">
-          <div className="my-8 space-y-6 relative">
-            <div className="px-4">
-              <h2 className="text-base font-semibold text-slate-900 dark:text-slate-200 flex items-center space-x-2">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-sky-500 dark:text-sky-400">
-                  <path d="M6 6H8V18H6V6Z" fill="currentColor" />
-                  <path d="M16 6H18V18H16V6Z" fill="currentColor" />
-                  <path d="M21 18H3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                  <path d="M3 15.5005L16.443 8.12325C16.8035 7.93591 17.2264 8.0601 17.4138 8.42063C17.4925 8.56191 17.511 8.72856 17.4653 8.88282L15.1258 16.0903C15.0435 16.3786 14.7733 16.5729 14.4748 16.5376C14.3372 16.5221 14.2063 16.4611 14.1029 16.3636L9.63615 12.1589C9.53862 12.0671 9.40969 12.0129 9.27411 12.0064L3 11.5005" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                </svg>
-                <span>Training Progress</span>
+
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg overflow-hidden ring-1 ring-black ring-opacity-5 mt-8 p-6">
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
+                Network Architecture
               </h2>
-              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Real-time visualization of model performance metrics during training</p>
+              <NetworkArchitectureVisualizer layersSummary={modelSummary} />
             </div>
-            
-            <div className="relative px-4">
-              <div className="absolute inset-0 -mx-4 border-t border-slate-200 dark:border-slate-700"></div>
-              <div className="relative">
-                <div className="flex items-center justify-between pt-4 pb-2">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-3 h-3 rounded-full bg-sky-500"></div>
-                    <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Loss</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <div className="w-3 h-3 rounded-full bg-indigo-500"></div>
-                    <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Accuracy</span>
-                  </div>
-                  <div className="flex items-center space-x-2 text-xs text-slate-500 dark:text-slate-400">
-                    <span>Total Epochs: <span className="font-semibold text-slate-700 dark:text-slate-300">{epochs}</span></span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="rounded-lg shadow-sm bg-white dark:bg-slate-800 overflow-hidden ring-1 ring-slate-900/5 dark:ring-white/10">
-              <div className="p-4 md:p-6">
-                <canvas
-                  ref={chartCanvasRef}
-                  width={900}
-                  height={400}
-                  className="w-full h-full"
-                />
-              </div>
-              <div className="border-t border-slate-200 dark:border-slate-700 px-4 py-3 sm:px-6 flex justify-between items-center bg-slate-50 dark:bg-slate-800/60">
-                <button className="inline-flex items-center text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-sky-500 dark:hover:text-sky-400">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1.5">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                    <polyline points="7 10 12 15 17 10"></polyline>
-                    <line x1="12" y1="15" x2="12" y2="3"></line>
-                  </svg>
-                  Export as PNG
-                </button>
-                <div className="flex items-center">
-                  <span className="text-xs text-slate-600 dark:text-slate-400 mr-3">
-                    Current Loss: <span className="font-mono font-medium text-slate-900 dark:text-white">{(loss || 0).toFixed(4)}</span>
-                  </span>
-                  <span className="text-xs text-slate-600 dark:text-slate-400">
-                    Accuracy: <span className="font-mono font-medium text-slate-900 dark:text-white">{(accuracy || 0).toFixed(2)}%</span>
-                  </span>
-                </div>
-              </div>
-            </div>
-            
-            {chartTooltip && (
-              <div className="absolute z-10 px-3 py-2 text-sm font-medium text-white bg-slate-800 rounded-lg shadow-sm dark:bg-slate-700 pointer-events-none transform -translate-x-1/2 -translate-y-full"
-                style={{
-                  left: chartTooltip.x,
-                  top: chartTooltip.y - 8,
-                }}
-              >
-                <div className="flex items-center justify-between space-x-4 mb-1 pb-1 border-b border-slate-700/50">
-                  <span className="font-medium text-sky-400">Epoch {chartTooltip.data.epoch}</span>
-                </div>
-                <div className="flex flex-col space-y-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-300">Loss:</span>
-                    <span className="font-mono font-medium text-sky-300">{chartTooltip.data.loss.toFixed(4)}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-300">Accuracy:</span>
-                    <span className="font-mono font-medium text-indigo-300">{chartTooltip.data.accuracy.toFixed(2)}%</span>
-                  </div>
-                </div>
-                <div className="absolute left-1/2 top-full -translate-x-1/2 -mt-px border-8 border-transparent border-t-slate-800 dark:border-t-slate-700"></div>
-              </div>
-            )}
           </div>
         </div>
-        <div className="absolute inset-0 pointer-events-none border border-slate-900/5 rounded-xl dark:border-slate-100/5"></div>
-        </div>
-
-        <div className="mb-10 space-y-6">
-          <h2 className="text-2xl font-semibold text-gray-900">Network Architecture</h2>
-          <NetworkArchitectureVisualizer layersSummary={modelSummary} />
-        </div>
-
       </div>
     </div>
-  </div>
-</div>
   );
 };
 

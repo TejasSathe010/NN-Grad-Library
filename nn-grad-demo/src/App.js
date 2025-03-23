@@ -2,7 +2,6 @@ import NeuralNetworkVisualizer from './NeuralNetworkVisualizer';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PackagePage from './PackagePage';
 
-
 function App() {
   return (
     <div className="App">
